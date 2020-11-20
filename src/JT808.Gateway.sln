@@ -37,6 +37,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JT808.Gateway.WebApiClientT
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JT808.Gateway.ReplyMessage", "JT808.Gateway.Services\JT808.Gateway.ReplyMessage\JT808.Gateway.ReplyMessage.csproj", "{886D0A3F-C974-442B-9820-F1C4C04EAAB6}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JT808.Gateway.RabbitMQ", "JT808.Gateway.RabbitMQ\JT808.Gateway.RabbitMQ.csproj", "{BCC11C27-C2CF-49EB-AB0E-F530FC0458FA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JT808.Gateway.RabbitMQ.QueueHosting", "JT808.Gateway.Tests\JT808.Gateway.RabbitMQ.QueueHosting\JT808.Gateway.RabbitMQ.QueueHosting.csproj", "{F56A84D7-4FD6-4EEC-84EE-2640C489B583}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -99,6 +103,14 @@ Global
 		{886D0A3F-C974-442B-9820-F1C4C04EAAB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{886D0A3F-C974-442B-9820-F1C4C04EAAB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{886D0A3F-C974-442B-9820-F1C4C04EAAB6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BCC11C27-C2CF-49EB-AB0E-F530FC0458FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCC11C27-C2CF-49EB-AB0E-F530FC0458FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BCC11C27-C2CF-49EB-AB0E-F530FC0458FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BCC11C27-C2CF-49EB-AB0E-F530FC0458FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F56A84D7-4FD6-4EEC-84EE-2640C489B583}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F56A84D7-4FD6-4EEC-84EE-2640C489B583}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F56A84D7-4FD6-4EEC-84EE-2640C489B583}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F56A84D7-4FD6-4EEC-84EE-2640C489B583}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -113,6 +125,7 @@ Global
 		{E34C6B7D-A48B-4871-895C-07AC12F959D3} = {6FAEC008-93CB-4730-8C58-D31FFD342C4F}
 		{AF0C529A-D3CA-4FE4-93B4-735D0934EBEF} = {6FAEC008-93CB-4730-8C58-D31FFD342C4F}
 		{886D0A3F-C974-442B-9820-F1C4C04EAAB6} = {3EF8490D-C993-49D8-8A3D-493B7F259D70}
+		{F56A84D7-4FD6-4EEC-84EE-2640C489B583} = {7CBAACEE-19BF-499A-8C41-36A1324D45E9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AA9303A7-6FB3-4572-88AA-3302E85330D1}
