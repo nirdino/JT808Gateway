@@ -9,65 +9,64 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using EasyNetQ;
+using Microsoft.Extensions.DependencyInjection;
 using JT808.Gateway.RabbitMQ.Models;
 
 namespace JT808.Gateway.RabbitMQ
 {
     public sealed class JT808MsgReplyConsumer : IJT808MsgReplyConsumer
-    {
+    { 
+        private readonly ILogger logger;
         private bool disposed = false;
         public CancellationTokenSource Cts { get; private set; } = new CancellationTokenSource();
-        private readonly string connStr = "host=113.141.66.240:31673;virtualHost=JT808-Gateway;username=dino;password=hbgz.123";
-        private readonly EasyNetQ.IBus bus;
-     
-        public string TopicName { get; }
         private readonly JT808MsgReplyConsumerConfig config;
-        private readonly ILogger logger;
-        public JT808MsgReplyConsumer(
-            IOptions<JT808MsgReplyConsumerConfig> consumerConfigAccessor,
-            ILoggerFactory loggerFactory)
-        {
+       
+
+        private readonly string connStr;
+        public string TopicName { get; }
+        private readonly RabbitMQManage rabbitMQManage;
+
+
+        public JT808MsgReplyConsumer(ILoggerFactory loggerFactory, IOptions<JT808MsgReplyConsumerConfig> consumerConfigAccessor,RabbitMQManage manageMQ)
+        {  
+            logger = loggerFactory.CreateLogger("JT808MsgReplyConsumer");
             config = consumerConfigAccessor.Value;
             TopicName = consumerConfigAccessor.Value.TopicName;
             connStr = config.ConnectStr;
-            bus = RabbitHutch.CreateBus(connStr);
-            logger = loggerFactory.CreateLogger("JT808MsgReplyConsumer");
+            rabbitMQManage = manageMQ;
+          
         }
 
-        public void OnMessage(Action<(string TerminalNo, byte[] Data)> callback)
+        public async void OnMessage(Action<(string TerminalNo, byte[] Data)> callback)
         {
-            bus.PubSub.Subscribe<MsgReply>(TopicName, message =>
-            {
-                callback((message.terminalNo, message.data));
-            });
+            await rabbitMQManage.RegisterProcessor(TopicName, callback);
         }
-        public void Subscribe()
+        public async void Subscribe()
         {
-            //consumer.Subscribe(TopicName);
+            await rabbitMQManage.Subscribe<MsgReply>(connStr, TopicName);
         }
 
         public void Unsubscribe()
         {
             if (disposed) return;
-            //consumer.Unsubscribe();
+            rabbitMQManage.Unsubscribe(connStr, TopicName);
             Cts.Cancel();
-        }
-
-        private void Dispose(bool disposing)
-        {
-            if (disposed) return;
-            if (disposing)
-            {
-                //consumer.Close();
-                bus.Dispose();
-                Cts.Dispose();
-            }
-            disposed = true;
         }
         ~JT808MsgReplyConsumer()
         {
             Dispose(false);
         }
+        private void Dispose(bool disposing)
+        {
+            if (disposed) return;
+            if (disposing)
+            {
+                rabbitMQManage.DisposeBus();
+                Cts.Dispose();
+            }
+            disposed = true;
+        }
+
         public void Dispose()
         {
             //必须为true

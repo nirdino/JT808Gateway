@@ -8,76 +8,66 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using EasyNetQ;
+using Microsoft.Extensions.DependencyInjection;
+using System.Net;
 using JT808.Gateway.RabbitMQ.Models;
 
 namespace JT808.Gateway.RabbitMQ
 {
     public sealed class JT808MsgConsumer : IJT808MsgConsumer
-    {
+    { 
+        private readonly ILogger logger;
         private bool disposed = false;
         public CancellationTokenSource Cts { get; private set; } = new CancellationTokenSource();
-        private readonly string connStr = "host=113.141.66.240:31673;virtualHost=JT808-Gateway;username=dino;password=hbgz.123";
-        private readonly EasyNetQ.IBus bus;
-        public string TopicName { get; }
         private readonly JT808MsgConsumerConfig config;
-        private readonly ILogger logger;
+       
 
-        public JT808MsgConsumer(
-            IOptions<JT808MsgConsumerConfig> consumerConfigAccessor,
-            ILoggerFactory loggerFactory)
+        private readonly string connStr;
+        public string TopicName { get; }
+        private readonly RabbitMQManage rabbitMQManage;
+
+        public JT808MsgConsumer(ILoggerFactory loggerFactory, IOptions<JT808MsgConsumerConfig> consumerConfigAccessor,RabbitMQManage manageMQ)
         {
-            config = consumerConfigAccessor.Value;
-            TopicName = consumerConfigAccessor.Value.TopicName;
-            connStr = config.ConnectStr;
-            bus = RabbitHutch.CreateBus(connStr);
             logger = loggerFactory.CreateLogger("JT808MsgConsumer");
+            config = consumerConfigAccessor.Value;
+            TopicName = config.TopicName;
+            connStr = config.ConnectStr;
+            rabbitMQManage = manageMQ;
         }
 
-        public void OnMessage(Action<(string TerminalNo, byte[] Data)> callback)
+        public async void OnMessage(Action<(string TerminalNo, byte[] Data)> callback)
         {
-             bus.PubSub.SubscribeAsync<MsgData>(TopicName,async message => {
-                 Task reslut= Task.Run(() =>
-                 {
-                     callback((message.terminalNo, message.data));
-                 });
-                 await reslut;
-                 //callback(message.terminalNo, message.data);
-            });
-            //bus.SubscribeAsync<MsgData>(TopicName, callback);
-            //bus.Subscribe<MsgData>(TopicName, message =>
-            //{
-            //    callback((message.terminalNo,message.data));
-            //});
+           await rabbitMQManage.RegisterProcessor(TopicName, callback);
         }
-
-
-
-
-    public void Subscribe()
+        //delegate OnMessageA<MsgData, Task>();
+        public async void Subscribe()
         {
-            //throw new NotImplementedException();
+            await rabbitMQManage.Subscribe<MsgData>(connStr, TopicName);//.Wait();
         }
 
         public void Unsubscribe()
         {
+            rabbitMQManage.Unsubscribe(connStr, TopicName);
             //throw new NotImplementedException();
         }
 
+        ~JT808MsgConsumer()
+        {
+            Dispose(false);
+        }
         public void Dispose()
-        {           
+        {
             //必须为true
             Dispose(true);
             //通知垃圾回收机制不再调用终结器（析构器）
             GC.SuppressFinalize(this);
-            //throw new NotImplementedException();
         }
         private void Dispose(bool disposing)
         {
             if (disposed) return;
             if (disposing)
             {
-                //consumer.Close();
-                bus.Dispose();
+                rabbitMQManage.DisposeBus();
                 Cts.Dispose();
             }
             disposed = true;

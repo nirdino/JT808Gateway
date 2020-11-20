@@ -42,17 +42,17 @@ namespace JT808.Gateway.RabbitMQ.QueueHosting
                     services.AddSingleton(typeof(ILogger<>), typeof(Logger<>));
                     services.AddJT808Configure()
                             //添加客户端工具
-                            .AddClient()
-                            .AddClientReport()
-                            .Builder()
+                            //.AddClient()
+                            //.AddClientReport()
+                            //.Builder()
                             //添加客户端服务
-                            .AddClientRabbitMQ()
-                            .AddMsgConsumer(hostContext.Configuration)
+                            //.AddClientRabbitMQ()
+                            //.AddMsgConsumer(hostContext.Configuration)
                             //添加消息应答生产者
-                            .AddMsgReplyProducer(hostContext.Configuration)
+                            //.AddMsgReplyProducer(hostContext.Configuration)
                             //添加消息应答服务并实现消息应答处理
-                            .AddReplyMessage<JT808ReplyMessageHandlerImpl>()
-                            .Builder()
+                            //.AddReplyMessage<JT808ReplyMessageHandlerImpl>()
+                            //.Builder()
                             //添加消息应答处理
                             .AddGateway(hostContext.Configuration)
                             .AddMessageHandler<JT808CustomMessageHandlerImpl>()
@@ -63,11 +63,11 @@ namespace JT808.Gateway.RabbitMQ.QueueHosting
                             .AddUdp()
                             .AddHttp()
                             .Register();//必须注册的
-                    services.AddJT808WebApiClientTool(hostContext.Configuration);
+                    //services.AddJT808WebApiClientTool(hostContext.Configuration);
                     //httpclient客户端调用
-                    services.AddHostedService<CallHttpClientJob>();
+                    //services.AddHostedService<CallHttpClientJob>();
                     //客户端测试
-                    services.AddHostedService<UpJob>();
+                    //services.AddHostedService<UpJob>();
 
 
                     //services.AddNacosConfig

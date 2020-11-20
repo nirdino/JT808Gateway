@@ -6,48 +6,52 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using EasyNetQ;
-using JT808.Gateway.RabbitMQ.Models;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using JT808.Gateway.RabbitMQ.Models;
 
 namespace JT808.Gateway.RabbitMQ
 {
     public sealed class JT808SessionProducer : IJT808SessionProducer
     {
+        private readonly ILogger logger;
         private bool disposed = false;
         public string TopicName { get; }
-        private readonly EasyNetQ.IBus bus;
-       
-        private readonly string connStr = "host=113.141.66.240:31673;virtualHost=JT808-Gateway;username=dino;password=hbgz.123";
+        private readonly RabbitMQManage rabbitMQManage;
+        private readonly string connStr;
         private readonly JT808SessionProducerConfig config;
-        private readonly ILogger logger;
-        public JT808SessionProducer(IOptions<JT808SessionProducerConfig> producerConfigAccessor)
+       
+        public JT808SessionProducer(ILoggerFactory loggerFactory, IOptions<JT808SessionProducerConfig> producerConfigAccessor, RabbitMQManage manageMQ)
         {
-            config = producerConfigAccessor.Value; 
+            logger = loggerFactory.CreateLogger("JT808SessionProducer");
+            config = producerConfigAccessor.Value;
             TopicName = producerConfigAccessor.Value.TopicName;
             connStr = config.ConnectStr;
-            bus = RabbitHutch.CreateBus(connStr);
+            rabbitMQManage = manageMQ;
         }
 
         public async ValueTask ProduceAsync(string notice, string terminalNo)
         {
             if (disposed) return;
             var msg = new MsgNotice() { notice = notice, terminalNo = terminalNo };
-            await bus.PubSub.PublishAsync<MsgNotice>(msg, TopicName);
+            await rabbitMQManage.PublishAsync<MsgNotice>(connStr, msg, TopicName);
         }
 
-        private void Dispose(bool disposing)
-        {
-            if (disposed) return;
-            if (disposing)
-            {
-                bus.Dispose();
-            }
-            disposed = true;
-        }
         ~JT808SessionProducer()
         {
             Dispose(false);
         }
+        private void Dispose(bool disposing)
+        {
+            if (disposed) return;
+           
+            if (disposing)
+            {
+                rabbitMQManage.DisposeBus();
+            }
+            disposed = true;
+        }
+
         public void Dispose()
         {
             //必须为true

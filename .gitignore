@@ -331,3 +331,4 @@ ASALocalRun/
 /nupkgs
 /src/JT808.DotNetty.Admin/tools/protoc-gen-grpc-web-1.0.3-windows-x86_64.exe
 /src/local_bk/JT808.Gateway.RabbitMQ
+/nuget_private.bat

@@ -7,45 +7,44 @@ using System.Text;
 using System.Threading.Tasks;
 using EasyNetQ;
 using EasyNetQ.Topology;
-using JT808.Gateway.RabbitMQ.Models;
 using System.Threading;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using JT808.Gateway.RabbitMQ.Models;
 
 namespace JT808.Gateway.RabbitMQ
 {
     public sealed class JT808MsgProducer : IJT808MsgProducer
     {
+        private readonly ILogger logger;
         private bool disposed = false;
-        public string TopicName { get; }
-        private readonly EasyNetQ.IBus bus;
-        private readonly string connStr = "host=113.141.66.240:31673;virtualHost=JT808-Gateway;username=dino;password=hbgz.123";
         private readonly JT808MsgProducerConfig config;
-       
-        private long CountNum=0;
- private readonly ILogger logger;
-        public JT808MsgProducer(
-          IOptions<JT808MsgProducerConfig> producerConfigAccessor)
+
+        private readonly string connStr;
+        public string TopicName { get; }
+        private readonly RabbitMQManage rabbitMQManage;
+
+        public JT808MsgProducer(ILoggerFactory loggerFactory, IOptions<JT808MsgProducerConfig> producerConfigAccessor, RabbitMQManage manageMQ)
         {
+            logger = loggerFactory.CreateLogger("JT808MsgProducer");
             config = producerConfigAccessor.Value;
             TopicName = producerConfigAccessor.Value.TopicName;
             connStr = config.ConnectStr;
-            bus = RabbitHutch.CreateBus(connStr);
+            rabbitMQManage = manageMQ;
         }
 
         public async ValueTask ProduceAsync(string terminalNo, byte[] data)
         {
             if (disposed) return;
-            var msg = new MsgData() { terminalNo = terminalNo, data= data };
-            await bus.PubSub.PublishAsync<MsgData>(msg, TopicName);
-            Interlocked.Increment(ref CountNum);
-            logger.LogInformation($"发送到MQ总数:{CountNum}");
+            var msg = new MsgData() { terminalNo = terminalNo, data = data };
+            await rabbitMQManage.PublishAsync<MsgData>(connStr, msg, TopicName);
         }
         private void Dispose(bool disposing)
         {
             if (disposed) return;
             if (disposing)
             {
-                bus.Dispose();
+                rabbitMQManage.DisposeBus();
             }
             disposed = true;
         }
@@ -57,6 +56,7 @@ namespace JT808.Gateway.RabbitMQ
         {
             //必须为true
             Dispose(true);
+
             //通知垃圾回收机制不再调用终结器（析构器）
             GC.SuppressFinalize(this);
         }
