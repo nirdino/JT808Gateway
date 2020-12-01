@@ -30,12 +30,15 @@ namespace JT808.Gateway.RabbitMQ
             rabbitMQManage = manageMQ;
         }
 
-        public async ValueTask ProduceAsync(string notice, string terminalNo)
+
+        
+        public async void ProduceAsync(string notice, string terminalNo)
         {
             if (disposed) return;
             var msg = new MsgNotice() { notice = notice, terminalNo = terminalNo };
             await rabbitMQManage.PublishAsync<MsgNotice>(connStr, msg, TopicName);
         }
+        
 
         ~JT808SessionProducer()
         {
@@ -59,5 +62,7 @@ namespace JT808.Gateway.RabbitMQ
             //通知垃圾回收机制不再调用终结器（析构器）
             GC.SuppressFinalize(this);
         }
+
+
     }
 }
